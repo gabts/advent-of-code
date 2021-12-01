@@ -6,7 +6,7 @@ const input = fs
   .map(Number);
 
 /**
- * Day 1 - part 1
+ * 2021 Day 1 - part 1
  * @param {number[]} input
  * @returns {number}
  */
@@ -19,7 +19,7 @@ function part1(input) {
 }
 
 /**
- * Day 1 - part 2
+ * 2021 Day 1 - part 2
  * @param {number[]} input
  * @returns {number}
  */
@@ -34,5 +34,5 @@ function part2(input) {
   return count;
 }
 
-console.log("Day 1 - part 1:", part1(input));
-console.log("Day 1 - part 2:", part2(input));
+console.log("2021 Day 1 - part 1:", part1(input));
+console.log("2021 Day 1 - part 2:", part2(input));
