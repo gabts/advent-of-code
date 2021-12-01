@@ -12,8 +12,8 @@ const input = fs
  */
 function part1(input) {
   let count = 0;
-  for (let i = 0; i < input.length; i++) {
-    if (input[i] > (input[i - 1] || Infinity)) count++;
+  for (let i = 1; i < input.length; i++) {
+    if (input[i] > input[i - 1]) count++;
   }
   return count;
 }
