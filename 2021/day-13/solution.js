@@ -5,80 +5,68 @@ const input = fs.readFileSync(`${__dirname}/input`, { encoding: "utf8" });
 const foldValuesRegex = /(x|y)=(\d+)$/;
 
 /**
- * @returns {{ grid: boolean[][], folds: { dir: string, value: number }[] }}
+ * @returns {{ folds: { up: boolean, at: number }[], points: number[][] }}
  */
 function parseInput() {
   const split = input.split("\n\n");
-  const pointLines = split[0].split("\n");
+  const points = split[0]
+    .split("\n")
+    .map((line) => line.split(",").map(Number));
+
   const foldLines = split[1].split("\n");
 
   /**
-   * @type {{ dir: string, value: number }[]}
+   * @type {{ up: boolean, at: number }[]}
    */
   const folds = [];
   for (const line of foldLines) {
     const [, dir, value] = line.match(foldValuesRegex);
-    folds.push({ dir, value: Number(value) });
+    folds.push({ up: dir === "y", at: Number(value) });
   }
 
-  /**
-   * @type {boolean[][]}
-   */
-  const grid = [];
-  for (let y = 0; y <= folds[0].value * 2; y++) {
-    grid.push([]);
-    for (let x = 0; x <= folds[0].value * 2; x++) {
-      grid[y][x] = false;
-    }
-  }
+  return { folds, points };
+}
 
-  for (const line of pointLines) {
-    const [x, y] = line.split(",");
-    grid[y][x] = true;
+/**
+ * @param {number[][]} points
+ */
+function draw(points) {
+  const maxX = Math.max(...points.map((p) => p[0]));
+  const maxY = Math.max(...points.map((p) => p[1]));
+  const arr = [];
+  for (let y = 0; y <= maxY; y++) {
+    arr.push([]);
+    for (let x = 0; x <= maxX; x++) arr[y][x] = "-";
   }
-
-  return { grid, folds };
+  for (const [x, y] of points) arr[y][x] = "X";
+  return "\n\n" + arr.map((row) => row.join("")).join("\n");
 }
 
 /**
  * @param {void | boolean} part2
+ * @returns {number | string}
  */
 function solution(part2) {
-  const { folds, grid } = parseInput();
+  const { folds, points } = parseInput();
 
   for (const fold of folds) {
-    if (fold.dir === "y") {
-      const folded = grid.splice(fold.value, grid.length).reverse();
-      for (let y = 0; y < grid.length; y++) {
-        for (let x = 0; x < grid[y].length; x++) {
-          if (folded[y][x]) grid[y][x] = folded[y][x];
-        }
-      }
-    } else {
-      for (let y = 0; y < grid.length; y++) {
-        const folded = grid[y].splice(fold.value, grid[y].length).reverse();
-        for (let x = 0; x < grid[y].length; x++) {
-          if (folded[x]) grid[y][x] = folded[x];
-        }
+    const i = fold.up ? 1 : 0;
+    const max = Math.max(...points.map((point) => point[i]));
+
+    for (let j = 0; j < points.length; j++) {
+      if (points[j][i] > fold.at) {
+        points[j][i] = max - points[j][i];
       }
     }
 
     if (!part2) {
-      let count = 0;
-      for (let y = 0; y < grid.length; y++) {
-        for (let x = 0; x < grid[y].length; x++) if (grid[y][x]) count++;
-      }
-      return count;
+      return points
+        .map(([x, y]) => "" + x + y)
+        .filter((point, i, arr) => arr.indexOf(point) === i).length;
     }
 
-    if (fold === folds[folds.length - 1]) {
-      return (
-        "\n\n" +
-        grid
-          .map((row) => row.map((cell) => (cell ? "#" : ".")).join(""))
-          .join("\n") +
-        "\n"
-      );
+    if (fold == folds[folds.length - 1]) {
+      return draw(points);
     }
   }
 }
