@@ -1,5 +1,14 @@
 const fs = require("fs");
 
+const input = fs
+  .readFileSync(`${__dirname}/input`, { encoding: "utf8" })
+  .split("\n")
+  .map((line) => JSON.parse(line));
+
+/**
+ * @typedef {{ left: number | Node, right: number | Node,  parent?: Node }} Node
+ */
+
 /**
  * @param {Node} node
  * @param {'left' | 'right'} side
@@ -24,15 +33,6 @@ function buildTree(arr, parent) {
   addNode(node, "right", arr[1]);
   return node;
 }
-
-const input = fs
-  .readFileSync(`${__dirname}/input`, { encoding: "utf8" })
-  .split("\n")
-  .map((line) => buildTree(JSON.parse(line)));
-
-/**
- * @typedef {{ left: number | Node, right: number | Node,  parent?: Node }} Node
- */
 
 const sidesMap = { left: "right", right: "left" };
 
@@ -169,10 +169,10 @@ function magnitude(node, value = 0) {
 }
 
 /**
- * @param {Node[]} nodes
  * @returns {number}
  */
-function part1(nodes) {
+function part1() {
+  const nodes = input.map((line) => buildTree(line));
   let sum = nodes[0];
   for (let i = 1; i < nodes.length; i++) {
     sum = add(sum, nodes[i]);
@@ -181,19 +181,21 @@ function part1(nodes) {
 }
 
 /**
- * @param {Node[]} nodes
  * @returns {number}
  */
-function part2(nodes) {
-  let max = 0;
-  for (const nodeA of nodes) {
-    for (const nodeB of nodes) {
-      if (nodeA === nodeB) continue;
-      max = Math.max(magnitude(add(nodeA, nodeB)), max);
+function part2() {
+  let max = -Infinity;
+  for (let i = 0; i < input.length; i++) {
+    for (let j = 0; j < input.length; j++) {
+      if (i === j) continue;
+      const nodeA = buildTree(input[i]);
+      const nodeB = buildTree(input[j]);
+      const sum = magnitude(add(nodeA, nodeB));
+      if (sum > max) max = sum;
     }
   }
   return max;
 }
 
-console.log("2021 Day 18 - part 1:", part1(input));
-console.log("2021 Day 18 - part 2:", part2(input));
+console.log("2021 Day 18 - part 1:", part1());
+console.log("2021 Day 18 - part 2:", part2());
