@@ -48,9 +48,7 @@ function part2() {
   function findFromLeft(str) {
     for (let i = 0; i < str.length; i++) {
       const n = str[i];
-      if (!isNaN(n)) {
-        return n;
-      }
+      if (!isNaN(n)) return n;
 
       for (let j = 3; j <= 5; j++) {
         const seq = str.substring(i, i + j);
