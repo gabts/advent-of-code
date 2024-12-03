@@ -12,45 +12,58 @@ void substr(char *dest, char *src, int start, int end) {
 }
 
 int main() {
-    int part1 = 0;
-
-    const char *pattern = "mul\\([0-9]+,[0-9]+\\)";
+    // regex which matches "do()" or "don't()" or "mul(1,2)"
+    const char *pattern = "do\\(\\)|don't\\(\\)|mul\\([0-9]+,[0-9]+\\)";
     regex_t regex;
     regmatch_t matches[1];
-
     regcomp(&regex, pattern, REG_EXTENDED);
 
-    char buff[512];
+    int part1 = 0;
+    int part2 = 0;
+    int do_enabled = 1;
+    char buff[2048];
     FILE *file = fopen("input", "r");
 
+    // read each line from file
     while(fgets(buff, sizeof(buff), file)) {
-      char *p = buff;
+      char *prog = buff;
 
-      while (regexec(&regex, p, 1, matches, 0) == 0) {
-          int start = matches[0].rm_so + 4;
-          int end = matches[0].rm_eo - 1;
+      // loop through each regex match in the line
+      while (regexec(&regex, prog, 1, matches, 0) == 0) {
+          int start = matches[0].rm_so;
+          int end = matches[0].rm_eo;
+          int len = end - start;
 
-          char str[8];
-          substr(str, p, start, end);
-          printf("%s\n", str);
+          // determine typ based on match length
+          if (len == 4) {
+              do_enabled = 1;
+          } else if (len == 7) {
+              do_enabled = 0;
+          } else if (prog[start] == 'm') {
+            char str[8];
+            substr(str, prog, start + 4, end - 1);
 
-          char *token = strtok(str, ",");
-          int a = atoi(token);
-          token = strtok(NULL, ",");
-          int b = atoi(token);
-          int prod = a * b;
+            int a = atoi(strtok(str, ","));
+            int b = atoi(strtok(NULL, ","));
+            int prod = a * b;
 
-          printf("%i,%i=%i\n", a, b, prod);
+            // add product of all mul() matches (part 1)
+            part1 += prod;
 
-          part1 += prod;
+            // only add product of mul() matches when do enabled (part 2)
+            if (do_enabled) {
+              part2 += prod;
+            }
+          }
 
-          p += end;
+          prog += end;
       }
     }
 
     fclose(file);
 
     printf("part 1: %i\n", part1);
+    printf("part 2: %i\n", part2);
 
     return 0;
 }
